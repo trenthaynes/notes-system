@@ -17,6 +17,7 @@ from notes.core import (
     find_most_recent_daily_note,
     get_daily_filename,
     render_daily_note,
+    slugify,
 )
 
 app = typer.Typer(name="notes", no_args_is_help=True, help="Personal notes management.")
@@ -106,3 +107,166 @@ def today(
 ) -> None:
     """Open or create today's daily note."""
     _today_impl(web=web)
+
+
+# ---------------------------------------------------------------------------
+# notes new
+# ---------------------------------------------------------------------------
+
+_PARENT_PATH_MAP = {
+    "/journal": "journal",
+    "/inbox": "inbox",
+    "/projects": "projects",
+}
+
+
+def _new_impl(title: str) -> None:
+    """Core logic for the new command — separated for testability."""
+    config = load_config()
+
+    slug = slugify(title)
+    filename = slug + ".md"
+    local_path = config.notes_dir / "inbox" / filename
+
+    # If file already exists locally, just open it
+    if local_path.exists():
+        subprocess.Popen([config.editor, str(local_path)])
+        typer.echo(f"✓ Opened: {local_path}")
+        return
+
+    today_str = date.today().strftime("%Y-%m-%d")
+    content = (
+        "---\n"
+        f'title: "{title}"\n'
+        f"creation date: {today_str}\n"
+        "tags: []\n"
+        'piper_vault_id: ""\n'
+        "---\n"
+        "\n"
+    )
+
+    client = NotesClient(config.server_url, config.api_token)
+    try:
+        created = client.create_note(title=title, content=content, parent_path="/inbox")
+    except NotesClientError as exc:
+        typer.echo(str(exc), err=True)
+        sys.exit(1)
+        return  # unreachable in production but allows test mocking of sys.exit
+    finally:
+        client.close()
+
+    note_id = created["id"]
+    content = content.replace('piper_vault_id: ""', f'piper_vault_id: "{note_id}"')
+
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    local_path.write_text(content)
+
+    subprocess.Popen([config.editor, str(local_path)])
+    typer.echo(f"✓ Created: {local_path}")
+
+
+@app.command(name="new")
+def new(title: str = typer.Argument(..., help="Title of the new note.")) -> None:
+    """Create a new note with the given title."""
+    _new_impl(title)
+
+
+# ---------------------------------------------------------------------------
+# notes open
+# ---------------------------------------------------------------------------
+
+
+def _resolve_parent_dir(notes_dir: Path, parent_path: str | None) -> Path:
+    """Map a PiperVault parentPath to a local directory."""
+    if parent_path and parent_path in _PARENT_PATH_MAP:
+        return notes_dir / _PARENT_PATH_MAP[parent_path]
+    return notes_dir / "inbox"
+
+
+def _open_impl(query: str) -> None:
+    """Core logic for the open command — separated for testability."""
+    config = load_config()
+
+    # Search local notes_dir recursively for .md files whose stem contains query
+    local_matches = [
+        p for p in config.notes_dir.rglob("*.md")
+        if query.lower() in p.stem.lower()
+    ]
+
+    if len(local_matches) == 1:
+        local_path = local_matches[0]
+        subprocess.Popen([config.editor, str(local_path)])
+        typer.echo(f"✓ Opened: {local_path}")
+        return
+
+    if len(local_matches) > 1:
+        for i, p in enumerate(local_matches, start=1):
+            typer.echo(f"{i}. {p}")
+        choice = typer.prompt("Select number", type=int)
+        if choice < 1 or choice > len(local_matches):
+            typer.echo(f"Invalid selection: {choice}", err=True)
+            sys.exit(1)
+            return
+        local_path = local_matches[choice - 1]
+        subprocess.Popen([config.editor, str(local_path)])
+        typer.echo(f"✓ Opened: {local_path}")
+        return
+
+    # No local match — try API
+    client = NotesClient(config.server_url, config.api_token)
+    try:
+        results = client.list_notes(q=query, limit=10)
+    except NotesClientError as exc:
+        typer.echo(str(exc), err=True)
+        sys.exit(1)
+        return
+    finally:
+        client.close()
+
+    if not results:
+        typer.echo(f"No notes found matching '{query}'. Try: notes new '{query}'")
+        sys.exit(1)
+        return
+
+    for i, note in enumerate(results, start=1):
+        typer.echo(f"{i}. {note.get('title', note.get('id', '?'))}")
+
+    choice = typer.prompt("Select number", type=int)
+    if choice < 1 or choice > len(results):
+        typer.echo(f"Invalid selection: {choice}", err=True)
+        sys.exit(1)
+        return
+
+    selected = results[choice - 1]
+    note_id = selected["id"]
+    title = selected.get("title", slugify(query))
+    parent_path = selected.get("parentPath")
+
+    client2 = NotesClient(config.server_url, config.api_token)
+    try:
+        note_data = client2.get_note(note_id)
+    except NotesClientError as exc:
+        typer.echo(str(exc), err=True)
+        sys.exit(1)
+        return
+    finally:
+        client2.close()
+
+    content = note_data.get("content", "")
+    # Inject piper_vault_id if not already present
+    if 'piper_vault_id: ""' in content:
+        content = content.replace('piper_vault_id: ""', f'piper_vault_id: "{note_id}"')
+
+    local_dir = _resolve_parent_dir(config.notes_dir, parent_path)
+    local_path = local_dir / (slugify(title) + ".md")
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    local_path.write_text(content)
+
+    subprocess.Popen([config.editor, str(local_path)])
+    typer.echo(f"✓ Opened: {local_path}")
+
+
+@app.command(name="open")
+def open_(query: str = typer.Argument(..., help="Partial title or keyword to search for.")) -> None:
+    """Open an existing note by partial title match."""
+    _open_impl(query)
