@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment — never commit
+deployment/.env
+migration/state.json
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+*.swp
