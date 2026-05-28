@@ -1,0 +1,64 @@
+services:
+  pipervault:
+    image: pipervault/piper-vault:latest
+    container_name: pipervault
+    restart: unless-stopped
+    environment:
+      AUTH_ENABLED: "true"
+      JWT_SECRET: "${JWT_SECRET}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      CORS_ORIGIN: "https://${PIPERVAULT_DOMAIN}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - config:/root/.delve
+      - plugins:/app/plugins
+      - watched:/app/watched
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+      - KILL
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp:noexec,nosuid,size=256m
+    pids_limit: 256
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pipervault.rule=Host(`${PIPERVAULT_DOMAIN}`)"
+      - "traefik.http.routers.pipervault.entrypoints=websecure"
+      - "traefik.http.routers.pipervault.tls=true"
+      - "traefik.http.routers.pipervault.tls.certresolver=${TRAEFIK_CERT_RESOLVER}"
+      - "traefik.http.services.pipervault.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # notes-mcp service added in U7 after the Python package is built and containerized
+
+volumes:
+  pgdata:
+  config:
+  plugins:
+  watched:
+
+networks:
+  proxy:
+    external: true
+    # This must be the same network your Traefik container is on.
+    # On Unraid, create it with: docker network create proxy
+    # Then ensure Traefik's compose/config connects to the "proxy" network.
