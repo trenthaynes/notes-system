@@ -1,7 +1,7 @@
 ---
 title: "feat: Self-hosted notes system (PiperVault + CLI + MCP)"
 type: feat
-status: active
+status: completed
 date: 2026-05-28
 origin: .agents/notes-system/specification/20260528_notes-system_spec.md
 ---
