@@ -1,0 +1,17 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install uv
+
+# Copy package files
+COPY pyproject.toml .
+COPY src/ src/
+
+# Install dependencies (no dev deps)
+RUN uv pip install --system --no-dev .
+
+EXPOSE 8000
+
+CMD ["notes-mcp"]

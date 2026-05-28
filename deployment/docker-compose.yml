@@ -48,7 +48,27 @@ services:
       retries: 3
       start_period: 60s
 
-  # notes-mcp service added in U7 after the Python package is built and containerized
+  notes-mcp:
+    build:
+      context: ..
+      dockerfile: Dockerfile.mcp
+    container_name: notes-mcp
+    restart: unless-stopped
+    environment:
+      PIPERVAULT_URL: "http://pipervault:8080"
+      PIPERVAULT_API_TOKEN: "${PIPERVAULT_API_TOKEN}"
+    depends_on:
+      pipervault:
+        condition: service_healthy
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notes-mcp.rule=Host(`${NOTES_MCP_DOMAIN}`)"
+      - "traefik.http.routers.notes-mcp.entrypoints=websecure"
+      - "traefik.http.routers.notes-mcp.tls=true"
+      - "traefik.http.routers.notes-mcp.tls.certresolver=${TRAEFIK_CERT_RESOLVER}"
+      - "traefik.http.services.notes-mcp.loadbalancer.server.port=8000"
 
 volumes:
   pgdata:
