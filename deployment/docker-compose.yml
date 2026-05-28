@@ -6,7 +6,7 @@ services:
     environment:
       AUTH_ENABLED: "true"
       JWT_SECRET: "${JWT_SECRET}"
-      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      ASK_SAGE_TOKEN: "${ASK_SAGE_TOKEN}"
       CORS_ORIGIN: "https://${PIPERVAULT_DOMAIN}"
     volumes:
       - pgdata:/var/lib/postgresql/data

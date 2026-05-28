@@ -91,15 +91,17 @@ Keep this secret. If you ever need to rotate it, all existing sessions will be i
 
 ---
 
-**`ANTHROPIC_API_KEY`**
+**`ASK_SAGE_TOKEN`**
 
-Your Anthropic API key. PiperVault uses this only for its RAG chat feature — when you ask a question in the chat interface, it sends the query and retrieved note excerpts to Claude to generate a response.
+Your AskSage API token. PiperVault uses this only for its RAG chat feature — when you ask a question in the chat interface, it sends the query and retrieved note excerpts to the LLM to generate a response. PiperVault has a built-in AskSage adapter alongside Anthropic, OpenAI, and Ollama.
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+ASK_SAGE_TOKEN=your-asksage-token-here
 ```
 
-Search and semantic similarity run entirely locally using the bundled ONNX model. If you do not have an Anthropic API key, leave this blank — PiperVault will still work for note storage and search; only the chat feature will fail.
+Search and semantic similarity run entirely locally using the bundled ONNX model. If you leave this blank, PiperVault will still work for note storage and search; only the RAG chat feature will fail.
+
+After deploying and logging in for the first time, go to **Settings → LLM Configuration** and select **Ask Sage** as the provider. The token you set here is what PiperVault will use for API calls — you do not need to re-enter it in the UI.
 
 ---
 
@@ -171,7 +173,7 @@ PiperVault requires a brief setup the first time you open it.
 
 1. Open `https://vault.yourdomain.com` in your browser.
 2. Register an account. Because `AUTH_ENABLED=true`, authentication is required.
-3. After logging in, open **Settings → LLM Configuration** and enter your Anthropic API key. PiperVault stores this separately from the environment variable — configure it here too if you want the chat feature to work from the UI.
+3. After logging in, open **Settings → LLM Configuration** and select **Ask Sage** as the provider. Confirm the token field reflects the value you set in `.env` — PiperVault receives it as an environment variable, but you may need to confirm or re-enter it in the UI depending on how PiperVault surfaces provider configuration.
 4. Open **Settings → API Keys** and create a new API key. Give it a descriptive name like `notes-cli`. Copy the token value — you will not be able to see it again.
 
 ## Step 6: Add the API token and deploy notes-mcp

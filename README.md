@@ -33,10 +33,10 @@ Work MacBook
                                   │
                             PostgreSQL + ONNX embeddings (local)
                                   │
-                            Anthropic API (RAG chat only)
+                            AskSage API (RAG chat only)
 ```
 
-The MCP server accesses PiperVault over the internal Docker network, so agent queries never leave your server. Only PiperVault's RAG chat feature calls the Anthropic API — search and retrieval are fully local.
+The MCP server accesses PiperVault over the internal Docker network, so agent queries never leave your server. Only PiperVault's RAG chat feature calls the AskSage API — search and retrieval are fully local.
 
 ## Daily note workflow
 
@@ -69,12 +69,12 @@ notes push --dry-run  Show what would be pushed without sending anything
 | **PiperVault** | Storage, embeddings, search, web UI | Everything |
 | **Docker + Compose** | Runs PiperVault and notes-mcp on Unraid | Server deployment |
 | **Traefik** | Reverse proxy + TLS for both services | HTTPS access |
-| **Anthropic API** | LLM for PiperVault's RAG chat | Chat feature only — not search |
+| **AskSage** | LLM for PiperVault's RAG chat | Chat feature only — not search |
 | **Tailscale** (or VPN) | Access from work machine to home server | Multi-machine access |
 | **Python 3.11+** | Runs the `notes` CLI and notes-mcp | CLI install |
 | **uv** | Python package manager | CLI install |
 
-The Anthropic API key is used only by PiperVault's chat feature. Semantic search and embeddings run entirely locally inside the Docker container using an ONNX model (all-MiniLM-L6-v2, 384 dimensions). You can use PiperVault for search and note retrieval without an Anthropic key — RAG chat will simply not work.
+The AskSage token is used only by PiperVault's chat feature. Semantic search and embeddings run entirely locally inside the Docker container using an ONNX model (all-MiniLM-L6-v2, 384 dimensions). You can use PiperVault for search and note retrieval without an AskSage token — RAG chat will simply not work. PiperVault also supports Anthropic, OpenAI, and Ollama as alternative LLM providers if you ever switch.
 
 ## Repository layout
 
