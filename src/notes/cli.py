@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from datetime import date, timedelta
@@ -270,3 +271,70 @@ def _open_impl(query: str) -> None:
 def open_(query: str = typer.Argument(..., help="Partial title or keyword to search for.")) -> None:
     """Open an existing note by partial title match."""
     _open_impl(query)
+
+
+# ---------------------------------------------------------------------------
+# notes push
+# ---------------------------------------------------------------------------
+
+
+def _extract_piper_vault_id(content: str) -> str | None:
+    """Extract the piper_vault_id value from YAML frontmatter, or None if absent/empty."""
+    m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    if not m:
+        return None
+    fm_text = m.group(1)
+    id_match = re.search(r'^piper_vault_id:\s*["\']?([^"\'\\n]*)["\']?', fm_text, re.MULTILINE)
+    if not id_match:
+        return None
+    value = id_match.group(1).strip()
+    return value if value else None
+
+
+def _push_impl(dry_run: bool = False) -> None:
+    """Core logic for the push command — separated for testability."""
+    config = load_config()
+
+    updated = 0
+    skipped = 0
+    errors = 0
+
+    client = NotesClient(config.server_url, config.api_token)
+    try:
+        for md_file in sorted(config.notes_dir.rglob("*.md")):
+            rel = md_file.relative_to(config.notes_dir)
+            content = md_file.read_text()
+            vault_id = _extract_piper_vault_id(content)
+
+            if not vault_id:
+                typer.echo(f"⚠ Skipping {rel} (no piper_vault_id)")
+                skipped += 1
+                continue
+
+            if dry_run:
+                typer.echo(f"  → Would push: {rel}")
+                updated += 1
+                continue
+
+            try:
+                client.update_note(vault_id, content)
+                typer.echo(f"✓ Pushed: {rel}")
+                updated += 1
+            except NotesClientError as exc:
+                typer.echo(f"✗ Failed: {rel}: {exc}")
+                errors += 1
+    finally:
+        client.close()
+
+    typer.echo(f"Push complete: {updated} updated, {skipped} skipped, {errors} errors")
+
+    if errors:
+        sys.exit(1)
+
+
+@app.command(name="push")
+def push(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print what would be pushed without calling the API."),
+) -> None:
+    """Push all local .md notes with a piper_vault_id to PiperVault."""
+    _push_impl(dry_run=dry_run)
