@@ -17,3 +17,7 @@ migration/state.json
 # IDE
 .idea/
 *.swp
+
+
+# scratch
+.agents/notes-system/

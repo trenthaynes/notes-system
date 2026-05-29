@@ -27,16 +27,16 @@ Notes are written locally first. The `notes` CLI creates a markdown file on disk
 PiperVault stores the original markdown verbatim — it does not transform or extract text-only content. You can retrieve any note's full content at any time via the web UI or API.
 
 ```
-Work MacBook
+Primary Machine
   notes CLI ──creates──► ~/.notes/journal/2026-05-28 Week 22 Day 148 - Thursday.md
              ──REST──────► Unraid: PiperVault  ◄──REST── notes-mcp ◄── Claude Code
                                   │
                             PostgreSQL + ONNX embeddings (local)
                                   │
-                            AskSage API (RAG chat only)
+                            AI API (RAG chat only)
 ```
 
-The MCP server accesses PiperVault over the internal Docker network, so agent queries never leave your server. Only PiperVault's RAG chat feature calls the AskSage API — search and retrieval are fully local.
+The MCP server accesses PiperVault over the internal Docker network, so agent queries never leave your server. Only PiperVault's RAG chat feature calls the AI API — search and retrieval are fully local.
 
 ## Daily note workflow
 
@@ -69,12 +69,12 @@ notes push --dry-run  Show what would be pushed without sending anything
 | **PiperVault** | Storage, embeddings, search, web UI | Everything |
 | **Docker + Compose** | Runs PiperVault and notes-mcp on Unraid | Server deployment |
 | **Traefik** | Reverse proxy + TLS for both services | HTTPS access |
-| **AskSage** | LLM for PiperVault's RAG chat | Chat feature only — not search |
+| **AI** | LLM for PiperVault's RAG chat | Chat feature only — not search |
 | **Tailscale** (or VPN) | Access from work machine to home server | Multi-machine access |
 | **Python 3.11+** | Runs the `notes` CLI and notes-mcp | CLI install |
 | **uv** | Python package manager | CLI install |
 
-The AskSage token is used only by PiperVault's chat feature. Semantic search and embeddings run entirely locally inside the Docker container using an ONNX model (all-MiniLM-L6-v2, 384 dimensions). You can use PiperVault for search and note retrieval without an AskSage token — RAG chat will simply not work. PiperVault also supports Anthropic, OpenAI, and Ollama as alternative LLM providers if you ever switch.
+The AI token is used only by PiperVault's chat feature. Semantic search and embeddings run entirely locally inside the Docker container using an ONNX model (all-MiniLM-L6-v2, 384 dimensions). You can use PiperVault for search and note retrieval without an AI token — RAG chat will simply not work. PiperVault supports Anthropic, AskSage, OpenAI, and Ollama as LLM providers if you ever switch.
 
 ## Repository layout
 

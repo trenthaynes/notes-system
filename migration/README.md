@@ -65,7 +65,7 @@ Before importing anything, run the script with `--dry-run` to see what it will p
 
 ```sh
 python migrate.py \
-  --vault ~/obsidian/trent \
+  --vault ~/my/vault/name \
   --server https://vault.yourdomain.com \
   --token placeholder \
   --dry-run
@@ -74,7 +74,7 @@ python migrate.py \
 In dry-run mode the `--token` is not used (no API calls are made), so a placeholder value is fine. The output looks like:
 
 ```
-Found 657 markdown files in /Users/you/obsidian/trent
+Found 657 markdown files in /Users/you/obsidian/name
 DRY RUN — no notes will be created
 
   → [1/657] Would migrate: 01 inbox/quick-capture.md → /inbox
@@ -98,7 +98,7 @@ Once you are satisfied with the dry-run output, run the real migration. Replace 
 
 ```sh
 python migrate.py \
-  --vault ~/obsidian/trent \
+  --vault ~/my/vault/name \
   --server https://vault.yourdomain.com \
   --token pv_live_abc123...
 ```
@@ -108,7 +108,7 @@ The script processes files sequentially with a 0.1-second pause between API call
 Output during migration:
 
 ```
-Found 657 markdown files in /Users/you/obsidian/trent
+Found 657 markdown files in /Users/you/obsidian/name
 
   ✓ [1/657] 01 inbox/quick-capture.md → /inbox (id: a1b2c3d4-...)
   ✓ [2/657] 02 projects/home-lab.md → /projects (id: b2c3d4e5-...)
