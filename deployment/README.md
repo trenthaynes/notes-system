@@ -1,6 +1,6 @@
 # Deployment
 
-This directory contains the Docker Compose configuration for running PiperVault and the notes-mcp server on your Unraid home server. Both services sit behind your existing Traefik reverse proxy and are reachable from any machine on your network or over Tailscale.
+This directory contains the Docker Compose configuration for running PiperVault and the notes-mcp server on your home server. Both services sit behind your existing Traefik reverse proxy and are reachable from any machine on your network or over Tailscale.
 
 ## Prerequisites
 
