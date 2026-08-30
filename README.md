@@ -29,7 +29,7 @@ PiperVault stores the original markdown verbatim — it does not transform or ex
 ```
 Primary Machine
   notes CLI ──creates──► ~/.notes/journal/2026-05-28 Week 22 Day 148 - Thursday.md
-             ──REST──────► Unraid: PiperVault  ◄──REST── notes-mcp ◄── Claude Code
+             ──REST──────► Server: PiperVault  ◄──REST── notes-mcp ◄── Claude Code
                                   │
                             PostgreSQL + ONNX embeddings (local)
                                   │
@@ -95,7 +95,7 @@ uv.lock            Locked dependencies
 
 ## Getting started
 
-1. **Deploy PiperVault and notes-mcp on Unraid** — see `deployment/README.md`
+1. **Deploy PiperVault and notes-mcp on Server** — see `deployment/README.md`
 2. **Import your existing vault** — see `migration/README.md`
 3. **Install the CLI on your work machine:**
 
