@@ -6,11 +6,11 @@ A self-hosted personal knowledge management system built to replace Obsidian. It
 
 Four components, two environments:
 
-**On your Unraid home server:**
+**On your server:**
 - **PiperVault** — the storage and search engine. Stores every note as original markdown, generates local vector embeddings (no data leaves the server for search), and provides a web UI accessible from any machine on your network or via Tailscale.
 - **notes-mcp** — an MCP server that exposes your notes to Claude Code and other AI agents. Wraps PiperVault's REST API and provides four tools: `search_notes`, `get_note`, `get_daily_note`, and `create_note`.
 
-**On your work machine (and optionally other machines):**
+**On your workstation (and optionally other machines):**
 - **`notes` CLI** — creates daily notes and standalone notes from the terminal, syncs them to PiperVault, and opens them in your editor.
 
 **In this repo (run once):**
