@@ -6,7 +6,7 @@ This directory contains the Docker Compose configuration for running PiperVault 
 
 Before you start:
 
-- Unraid is running and you have shell access (SSH or the Unraid terminal).
+- Server is running and you have shell access (SSH or the Unraid terminal).
 - Docker and Docker Compose are available (standard on Unraid).
 - Traefik is already deployed as a container and is listening on ports 80 and 443. You know which entrypoint name handles HTTPS — typically `websecure`.
 - Traefik has a certificate resolver configured (Let's Encrypt or similar). You know its name — check your Traefik static config (`traefik.yml` or the equivalent command-line flags on your existing Traefik container).
@@ -39,15 +39,15 @@ labels:
 
 The Compose file uses environment variables (e.g. `${PIPERVAULT_DOMAIN}`) so you set the values once in `.env` and they propagate to both the container environment and the Traefik labels.
 
-## Step 1: Copy the files to Unraid
+## Step 1: Copy the files to Server
 
-Copy the `deployment/` directory to your Unraid server. A reasonable location is `/mnt/user/appdata/notes-system/`:
+Copy the `deployment/` directory to your server. A reasonable location is `/mnt/user/appdata/notes-system/`:
 
 ```sh
-scp -r deployment/ root@your-unraid-ip:/mnt/user/appdata/notes-system/
+scp -r deployment/ root@your-server-ip:/mnt/user/appdata/notes-system/
 ```
 
-Or copy via the Unraid web UI file manager, or clone the whole repo onto Unraid and work from there.
+Or copy via UI file manager, or clone the whole repo onto the server and work from there.
 
 ## Step 2: Create your `.env` file
 
